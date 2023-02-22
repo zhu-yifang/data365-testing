@@ -1,9 +1,34 @@
 import json
+import csv
+from pathlib import Path
 
-with open("response") as f:
-    response = json.load(f)
-    for post in response["posts"]:
-        print(post["post_url"])
-        for secondary_link in post["secondary_links"]:
-            print(secondary_link["link"])
-        print('-' * 80)
+
+def make_csv(file_name):
+    with open(file_name) as f:
+        response = json.load(f)
+
+    with open(file_name + '.csv', "w", newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["post_url", "secondary_link"])
+        for post in response["posts"]:
+            temp = []
+            temp.append(post["post_url"])
+            for secondary_link in post["secondary_links"]:
+                temp.append(secondary_link["link"])
+            writer.writerow(temp)
+
+
+def find_all_json_files():
+    # find all files starting with "TOP" or "LATEST"
+    file_names = []
+    p = Path('.')
+    for child in p.iterdir():
+        if child.is_file() and child.name.startswith(("TOP", "LATEST")):
+            file_names.append(child.name)
+    return file_names
+
+
+if __name__ == "__main__":
+    file_names = find_all_json_files()
+    for file_name in file_names:
+        make_csv(file_name)
